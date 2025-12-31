@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ListingType {
+  GAME
+  CONSOLE
+  CD
+  DVD
+  ACCESSORY
+}
+
+enum MediaFormat {
+  DISC
+  CARTRIDGE
+  OTHER
+}
+
+enum MediaTag {
+  COVER_FRONT
+  CASE_BACK
+  DISC_FRONT
+  DISC_BACK
+  EXTRAS
+}
+
+enum ConditionCategory {
+  LOOSE
+  BOX_ONLY
+  BOX_WITH_MANUAL
+  BOX_NO_MANUAL
+}
+
+model Listing {
+  id                 String            @id @default(cuid())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  sellerEmail        String
+  type               ListingType
+  mediaFormat        MediaFormat
+
+  title              String
+  platform           String?
+  description        String
+
+  conditionCategory  ConditionCategory
+
+  // PriceCharting match
+  priceChartingId      String?
+  priceChartingName    String?
+  priceChartingConsole String?
+  matchedPriceCents    Int?
+  listingPriceCents    Int
+  currency             String          @default("EUR")
+  priceMatchedAt       DateTime?
+
+  locationText       String?
+
+  media              ListingMedia[]
+}
+
+model ListingMedia {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  url       String
+  tag       MediaTag
+  sortOrder Int      @default(0)
+
+  @@index([listingId])
+}
